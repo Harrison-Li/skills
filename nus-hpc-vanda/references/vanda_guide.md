@@ -26,7 +26,7 @@ Vanda uses PBS Pro for job management.
 ## Storage
 
 - **Home:** `/home/svu/e1547144` (Quota limited, backed up).
-- **Scratch:** `/hpctmp/e1547144` (High performance, periodic purging).
+- **Scratch:** `/scratch/e1547144` (High performance, periodic purging).
 
 ## Software (Modules)
 
