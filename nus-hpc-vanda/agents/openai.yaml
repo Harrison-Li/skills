@@ -1,0 +1,7 @@
+interface:
+  display_name: "NUS HPC Vanda"
+  short_description: "Access and manage Vanda cluster jobs"
+  default_prompt: "Use $nus-hpc-vanda to help me connect to Vanda, submit a PBS job, or inspect cluster job status."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Code Guidelines"
+  short_description: "Reduce common coding mistakes"
+  default_prompt: "Use $code-guidelines to review this code for unnecessary complexity and hidden assumptions."
+
+policy:
+  allow_implicit_invocation: true
