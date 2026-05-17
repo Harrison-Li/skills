@@ -1,5 +1,5 @@
 ---
-name: pandoc
+name: pandoc-skill
 description: >
   Convert documents between formats using pandoc. Supports HTML, Markdown, DOCX, PDF, EPUB, LaTeX,
   ODT, RST, Org, MediaWiki, JIRA, CSV, Jupyter notebooks, and many more — any direction pandoc supports.

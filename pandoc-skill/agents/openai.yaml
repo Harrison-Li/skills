@@ -1,0 +1,7 @@
+interface:
+  display_name: "pandoc-skill"
+  short_description: "Convert documents between different formats"
+  default_prompt: "Use $pandoc-skill to help me convert documents between different formats."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,7 @@
+interface:
+  display_name: "xyzrender-skill"
+  short_description: "Generate molecular plots from xyz file or SMILES"
+  default_prompt: "Use $xyzrender-skill to help me generate 3D molecular structures from xyz file or SMILES."
+
+policy:
+  allow_implicit_invocation: true
