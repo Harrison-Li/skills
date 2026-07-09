@@ -1,6 +1,6 @@
 # Examples
 
-Real-world code examples demonstrating the four principles. Each example shows what LLMs commonly do wrong and how to fix it.
+Real-world code examples demonstrating the five principles. Each example shows what LLMs commonly do wrong and how to fix it.
 
 ---
 
@@ -222,7 +222,171 @@ def save_preferences(db, user_id: int, preferences: dict):
 
 ---
 
-## 3. Surgical Changes
+## 3. Readable Structure
+
+### Example 1: Helper-Function Soup
+
+**User Request:** "Refactor this optimizer code for readability"
+
+**❌ What LLMs Do (Scattered Helpers)**
+
+```python
+def optimize_geometry(atoms, config):
+    model = _resolve_model_path(config)
+    calc = _build_calculator(model, config)
+    atoms.calc = calc
+    opt_atoms = _atoms_for_optimization(atoms, config)
+    optimizer = _build_optimizer(opt_atoms, atoms, config)
+    history = []
+
+    def record_step():
+        history.append(_snapshot(atoms))
+
+    optimizer.attach(record_step, interval=1)
+    optimizer.run(
+        fmax=_fmax(config),
+        steps=_steps(config),
+    )
+    _write_output(atoms, config)
+    return _result(atoms, history, config)
+
+
+def _resolve_model_path(config): ...
+def _build_calculator(model, config): ...
+def _atoms_for_optimization(atoms, config): ...
+def _build_optimizer(opt_atoms, atoms, config): ...
+def _fmax(config): ...
+def _steps(config): ...
+def _snapshot(atoms): ...
+def _write_output(atoms, config): ...
+def _result(atoms, history, config): ...
+```
+
+**Problems:**
+- The top-level flow is readable only if you jump through many tiny private helpers.
+- `config`, `atoms`, and `history` are threaded through the whole module.
+- Helper names describe implementation mechanics rather than domain steps.
+- Related workflow state is not grouped anywhere.
+
+**✅ What Should Happen (Cohesive Object)**
+
+```python
+class GeometryOptimizer:
+    def __init__(self, atoms, config):
+        self.atoms = atoms
+        self.config = config
+        self.optimization = config.get("optimization", {})
+        self.history = []
+
+    def run(self):
+        self.configure_atoms()
+        self.attach_calculator()
+        optimizer = self.create_optimizer()
+
+        self.record_snapshot()
+        optimizer.attach(self.record_snapshot, interval=1)
+        converged = optimizer.run(
+            fmax=self.fmax_target,
+            steps=self.max_steps,
+        )
+
+        self.write_structure()
+        return self.result(converged)
+
+    def configure_atoms(self):
+        self.atoms.pbc = self.config.get("pbc", True)
+
+    def attach_calculator(self):
+        model_path = Path(self.config["model"]).expanduser().resolve()
+        self.atoms.calc = DP(model=str(model_path))
+
+    def create_optimizer(self):
+        opt_atoms = self.atoms_for_optimization()
+        return LBFGS(opt_atoms, logfile=self.config.get("logfile", "-"))
+
+    @property
+    def fmax_target(self):
+        return float(self.optimization.get("fmax", 0.05))
+
+    @property
+    def max_steps(self):
+        return int(self.optimization.get("max_steps", 1000))
+```
+
+**Why this is clearer:**
+- Shared state lives in one object instead of being passed everywhere.
+- `run()` reads as the workflow.
+- Methods are named as domain actions, not generic `_helper` utilities.
+- The class exists because there is related state and a multi-step process, not because "classes are cleaner" by default.
+
+### Example 2: Do Not Class a Linear Function
+
+**User Request:** "Clean up this function that builds an output filename"
+
+**❌ What LLMs Do (Class for Style)**
+
+```python
+class OutputPathBuilder:
+    def __init__(self, filename):
+        self.filename = filename
+
+    def normalized_suffix(self):
+        return ".cif"
+
+    def build(self):
+        path = Path(self.filename)
+        if path.suffix.lower() == self.normalized_suffix():
+            return str(path)
+        return str(path.with_suffix(self.normalized_suffix()))
+
+
+outputfile = OutputPathBuilder(outputfile).build()
+```
+
+**✅ What Should Happen (Simple Function)**
+
+```python
+def cif_output_path(filename: str) -> str:
+    path = Path(filename)
+    if path.suffix.lower() == ".cif":
+        return str(path)
+    return str(path.with_suffix(".cif"))
+```
+
+**Rule of thumb:** Use a class when it groups meaningful state and workflow. Use a function when the work is one small transformation.
+
+### Example 3: Module Boundaries Beat More Helpers
+
+**User Request:** "This file has calculators, optimizers, and result formatting mixed together"
+
+**❌ What LLMs Do (One Large Utility Module)**
+
+```python
+# optimize.py
+def build_dpa_calculator(config): ...
+def build_mace_calculator(config): ...
+def build_lbfgs_optimizer(atoms, config): ...
+def build_fire_optimizer(atoms, config): ...
+def format_history(atoms): ...
+def format_result(atoms, history): ...
+def optimize_geometry(atoms, config): ...
+```
+
+**✅ What Should Happen (Small Modules by Responsibility)**
+
+```text
+mof_optimization/
+├── calculators.py   # calculator factory and MLIP-specific setup
+├── optimizers.py    # optimizer selection and cell relaxation wrapper
+├── results.py       # history snapshots and return payload formatting
+└── geometry.py      # high-level GeometryOptimizer workflow
+```
+
+**Caution:** Split modules only when the boundaries are real. If each file would contain one tiny function, keep the code together.
+
+---
+
+## 4. Surgical Changes
 
 ### Example 1: Drive-by Refactoring
 
@@ -367,7 +531,7 @@ def save_preferences(db, user_id: int, preferences: dict):
 
 ---
 
-## 4. Goal-Driven Execution
+## 5. Goal-Driven Execution
 
 ### Example 1: Vague vs. Verifiable
 
@@ -501,6 +665,7 @@ def sort_scores(scores):
 |-----------|-------------|-----|
 | Think Before Coding | Silently assumes file format, fields, scope | List assumptions explicitly, ask for clarification |
 | Simplicity First | Strategy pattern for single discount calculation | One function until complexity is actually needed |
+| Readable Structure | Many tiny `_helper` functions pass the same state around | Use a cohesive class or real module boundary when state/workflow belongs together |
 | Surgical Changes | Reformats quotes, adds type hints while fixing bug | Only change lines that fix the reported issue |
 | Goal-Driven | "I'll review and improve the code" | "Write test for bug X → make it pass → verify no regressions" |
 

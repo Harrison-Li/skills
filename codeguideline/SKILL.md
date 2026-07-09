@@ -1,11 +1,11 @@
 ---
 name: code-guidelines
-description: Behavioral guidelines to reduce common LLM coding mistakes. Use when writing, reviewing, or refactoring code to avoid overcomplication, make surgical changes, surface assumptions, and define verifiable success criteria.
+description: Behavioral guidelines to reduce common LLM coding mistakes, improve readability, and refactor code structure. Use when writing, reviewing, or refactoring code to avoid overcomplication, improve structure/readability, make surgical changes, surface assumptions, and define verifiable success criteria.
 ---
 
 # Code Guidelines
 
-Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+Behavioral guidelines to reduce common LLM coding mistakes, improve readability, and refactor code structure. Merge with project-specific instructions as needed.
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
@@ -31,7 +31,17 @@ Before implementing:
 
 Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 
-## 3. Surgical Changes
+## 3. Readable Structure
+
+**Organize by responsibility, not by scattered helpers.**
+
+- Prefer cohesive classes or module-level objects when related state, config, and workflow steps are passed through many helper functions.
+- Avoid chains of tiny private `_helper` functions when they make the main flow harder to read.
+- Keep a simple function when the task is linear and stateless; don't introduce a class only for style.
+- If helpers are still the clearest option, give them domain-specific names and keep them near the code they support.
+- For concrete structure examples, read `references/EXAMPLES.md` section 3 when the refactor involves many helpers, shared config/state, or unclear module boundaries.
+
+## 4. Surgical Changes
 
 **Touch only what you must. Clean up only your own mess.**
 
@@ -47,7 +57,7 @@ When your changes create orphans:
 
 The test: Every changed line should trace directly to the user's request.
 
-## 4. Goal-Driven Execution
+## 5. Goal-Driven Execution
 
 **Define success criteria. Loop until verified.**
 
