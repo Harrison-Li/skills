@@ -1,0 +1,4 @@
+interface:
+  display_name: "Generalized Autoresearch"
+  short_description: "Design and run experiments for any code project"
+  default_prompt: "Use $autoresearch to prepare project experiments and ask me to review the files before running."

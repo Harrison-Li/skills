@@ -1,7 +1,0 @@
-interface:
-  display_name: "Code Guidelines"
-  short_description: "Improve readability and code structure"
-  default_prompt: "Use $code-guidelines to review this code for unnecessary complexity, hidden assumptions, readability issues, and structure refactoring."
-
-policy:
-  allow_implicit_invocation: true

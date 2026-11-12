@@ -1,0 +1,7 @@
+interface:
+  display_name: "Code Guidelines"
+  short_description: "Concise Python style and code cleanup"
+  default_prompt: "Use $code-guidelines to simplify this Python code and remove stale code while preserving valid-input behavior."
+
+policy:
+  allow_implicit_invocation: true
